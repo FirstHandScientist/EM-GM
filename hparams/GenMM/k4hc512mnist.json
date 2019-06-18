@@ -1,6 +1,6 @@
 {
     "Dir": {
-        "log_root": "results/newk4hc512mnist/"
+        "log_root": "results/may_k4hc512mnist/"
     },
     "Glow": {
         "image_shape": [
