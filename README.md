@@ -7,8 +7,10 @@ Code is for reproducing experiment results (model comparison part)
 4. tqdm 4.26.0
 5. numpy, scipy
 
-## Datasets:
+## Model Evaluation is Done on Datasets:
 Algorithm evaluation in our experiment section is done with dataset MNIST and FashionMNIST.
+
+## Classification Task Code is at [Classification Repos](https://github.com/FirstHandScientist/classification-EM-GM)
 
 ## Usage Instruction:
 
@@ -32,8 +34,8 @@ For option <mode>, it can either be Generating or Interpolation.
 
 ## Model implementation and evaluation:
 
-For generator implementation in our GenMM and LatMM, the gnerators are implemented as flow-based models. The specific glow structure among flow models is used. The glow structure in https://github.com/chaiyujin/glow-pytorch as pytorch implemention of paper "Glow: Generative Flow with Invertible 1×1 Convolutions" is adopted.
+For generator implementation in our GenMM and LatMM, the gnerators are implemented as flow-based models. The specific glow structure among flow models is used. The glow structure in [glow-pytorch](https://github.com/chaiyujin/glow-pytorch) as pytorch implemention of paper "Glow: Generative Flow with Invertible 1×1 Convolutions" is adopted.
 
-For implementation of our model/algorithm evaluation regarding different metrics, we use the generative model evaluation framework: https://github.com/xuqiantong/GAN-Metrics
+For implementation of our model/algorithm evaluation regarding different metrics, we use the [generative model evaluation framework](https://github.com/xuqiantong/GAN-Metrics)
     
 
