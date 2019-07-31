@@ -6,7 +6,7 @@ import os
 import cv2
 import random
 import torch
-import vision
+
 import torchvision.datasets as dset
 import torch
 import numpy as np
@@ -75,7 +75,8 @@ if __name__ == "__main__":
         os.makedirs(IMG_DIR)
     hparams = JsonConfig(hparams)
     ### the dir to load model
-    hparams.Infer.pre_trained = "results/archive/fashion-mnist_GenMM_EMgap5/GenMM-K9/fashion-mnist/log/trained.pkg"
+    hparams.Infer.pre_trained = "cluster/archive/mnist/GenMM-K5/log/trained.pkg"
+    hparams.Infer.pre_trained = "cluster/archive/mnist/LatMM-K5/log/trained.pkg"
     
     batch_size = hparams.Train.batch_size
     builded = build(hparams, False)
