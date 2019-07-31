@@ -72,11 +72,6 @@ class nll_computer(object):
         self.regulate_std = hparams.Mixture.regulate_std
         #self.regulator_std = hparams.Mixture.regulator_std
         self.warm_start = True if len(hparams.Train.warm_start)>0 else False
-        #self.nlog_joint_prob = []
-        #self.nlog_joint_prob = torch.FloatTensor(hparams.Mixture.num_component,
-        #                                hparams.Train.batch_size).to(self.data_device)
-        
-        #self.em_loss = em_loss(self.graph, self.nlog_gamma, self.nlog_joint_prob, self.batch_size)
         
     def compute(self):
         # set to training state
@@ -113,10 +108,6 @@ class nll_computer(object):
                         #testing reverse
                         logp = -(gaussian_nlogp + nlogdet) 
                         logp = logp.cpu().numpy()
-                    #######################nats/pixels#################
-                    # real_p = np.exp(logp) * self.graph.get_prior().numpy()[:, np.newaxis]
-                    # tmp_sum = np.sum(real_p, axis=0)
-                    # loss = np.mean( - np.log(tmp_sum + 1e-6) )
                     #######################exactly compute#################
                     logp = logp * thops.all_pixels(x)
                     #min_logp = logp.min(axis= 0)
@@ -128,51 +119,6 @@ class nll_computer(object):
                     loss = np.mean(-log_sum - min_logp)/thops.all_pixels(x)
                     if np.isinf(loss):
                         print("[NLL]: encounter inf.")
-                    #######################approximate compute #################
-                    # logp = logp * thops.pixels(x)
-                    # loss_vec = np.zeros(self.batch_size)
-                    # loss= 0
-                    # count= 0
-                    # for i in range(self.batch_size):
-                    #     temp_array = logp[:,i]
-                    #     #################### kick out infinite numbers 
-                    #     if True in np.isinf(temp_array):
-                    #         continue
-                    #     #################### for K = 1 case ############
-                    #     if temp_array.shape[0]==1:
-                    #         loss_vec[i] = -temp_array/thops.pixels(x)
-                    #         continue
-
-                    #     ##### for K > 1 cases####################
-                        
-                    #     delta_logp = temp_array- temp_array.min()
-                    #     sorted_delta_logp = np.sort(delta_logp)
-                    #     if sorted_delta_logp[1]>20 or sorted_delta_logp[-1]>40:
-                    #         vec_p = np.log(self.graph.get_prior().numpy()[delta_logp.argmax()]) + delta_logp.max()
-                    #     else:
-                    #         vec_p = np.log(np.sum(self.graph.get_prior().numpy() * np.exp(delta_logp)))
-                    #     loss_vec[i] =  - (temp_array.min()+ vec_p)/thops.pixels(x)
-                    # count = 0
-                    # for i in range(self.batch_size):
-                    #     if loss_vec[i]-loss_vec.min()<1e6:
-                    #         loss = loss + loss_vec[i]
-                    #         count = count +1
-                            
-                    # try:
-                    #     loss = loss/count
-                    #     #loss = np.median(loss_vec)
-                    # except:
-                    #     print("[loss_vec:{}]".format(loss_vec))
-                    #         # if count>0:
-                    # #     loss = loss/count
-                    # # else:
-                    # #     pass
-                    #  #################### sanity check #############
- 
-                    # if loss < 0:
-                    #     print("logp: {}".format(logp))
-                    #     print("loss_vec is: {}".format(loss_vec))
-                    #     counter +=1
                                     
                 tmp_nll_result += loss
                 # global step

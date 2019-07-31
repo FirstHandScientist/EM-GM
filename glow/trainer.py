@@ -62,8 +62,6 @@ class Trainer(object):
                                       #   num_workers=8,
                                       shuffle=True,
                                       drop_last=True)
-        # self.n_epoches = (hparams.Train.num_batches+len(self.data_loader)-1)
-        # self.n_epoches = self.n_epoches // len(self.data_loader)
         self.n_epoches = hparams.Train.n_epoches
 
         self.global_step = 0
@@ -101,7 +99,7 @@ class Trainer(object):
         if self.naive:
             with torch.no_grad():
                 z, nll = self.graph["old"](x=x, y_onehot=y_onehot)
-                # nll = nll * thops.pixels(x)
+
                 nlog_joint_prob =nll - torch.log(self.graph_prior.unsqueeze(1).expand_as(nll)+1e-6).to(self.data_device)
                 tmp_sum = torch.log( torch.sum( torch.exp(-nlog_joint_prob), dim=[0]) ).to(self.data_device)                
                 nlog_gamma = nlog_joint_prob + tmp_sum.expand_as(nlog_joint_prob)
@@ -135,30 +133,16 @@ class Trainer(object):
         self.graph["old"].update_prior(self.graph_prior)
         start_epoch = self.loaded_step
         
-        # new2old(global_step=self.global_step,
-        #         path=self.log_dir,
-        #         graph=self.graph,
-        #         optim=self.optim,
-        #         max_checkpoints=self.max_checkpoints,
-        #         is_best=False)
-        
         # set to training state
         
         for key, graph in self.graph.items():
             graph.train()
-            # if self.naive:
-            #     for i in range(self.num_component):
-            #         graph.get_component(i).train()
-            # else:
-            #     graph.get_component().train()
-        
 
         # begin to train
-        # for epoch in range(self.n_epoches):
+
         for epoch in myRange(start_epoch, start_epoch + self.n_epoches, 1):    
             try:
                 print("{} at epoch: {}, loss {}, prior {}, prior_in_graph {}".format(os.path.basename(self.hparams.Dir.log_root), epoch, loss.data, self.graph_prior, self.graph["new"].get_prior()))
-                # print("epoch: {}, loss {}, prior {}, prior_in_graph {}".format(epoch, loss.data, self.graph_prior, self.graph["new"].get_prior()))
             except NameError:
                 print("epoch {}, loss {}, prior {}".format(epoch, 0, self.graph_prior))
                 
@@ -222,11 +206,6 @@ class Trainer(object):
                     loss = loss_generative
 
                 else:
-                    # for param_tensor in self.graph["new"].state_dict():
-                    #     if not (self.graph["new"].state_dict()[param_tensor] is self.graph["old"].state_dict()[param_tensor]):
-                    #         print(param_tensor)
-                    #         assert False
-                    # assert False, "check through"
                     ## posterior computation
                     nlog_gamma = self._posterior_computation(x=x, y_onehot=y_onehot)
                     ##### likelihood computation
@@ -239,18 +218,10 @@ class Trainer(object):
                     loss_generative = (torch.mean(torch.sum( torch.exp(-nlog_gamma) * new_nlog_joint_prob, dim=0)) + torch.mean(new_nlogdet))/thops.all_pixels(x)
                     ## Conditional entropy computation
                     if self.regulate_mulI>0:
-                        
-                        # new_min_nlog_joint_prob, _ = new_nlog_joint_prob.min(dim=0)
-                        # new_delta_nlog_joint_prob = new_nlog_joint_prob - min_nlog_joint_prob
-
-                        # new_tmp_sum = torch.log( torch.sum( torch.exp(-new_delta_nlog_joint_prob), dim=[0]) + 1e-6).to(self.data_device)                
-                        # new_nlog_gamma = new_delta_nlog_joint_prob + new_tmp_sum.expand_as(new_delta_nlog_joint_prob)
+                        # mutual information regulation to be considered in future
                         new_nlog_gamma = nlog_gamma
                         total_joint_nlog = new_gaussian_nlogp + new_nlogdet - torch.log(self.graph_prior.unsqueeze(1)+1e-8).to(self.data_device)
                         conditional_entropy = torch.sum((-nlog_gamma) * torch.exp(-total_joint_nlog/thops.all_pixels(x)) )
-                        # fix_point_conditionalH_matrix = torch.exp(-new_nlog_gamma) * ( new_nlog_gamma)
-                        # fix_point_conditionalH = torch.sum(fix_point_conditionalH_matrix, dim=0)
-                        # px = torch.exp(-new_nlog_joint_prob/thops.pixels(x)).sum(dim=0) * torch.exp(-new_nlogdet/thops.pixels(x))
                         # conditional_entropy = torch.sum(fix_point_conditionalH * px)
                         if conditional_entropy == float('inf') or conditional_entropy == float('-inf'):
                             print("[Encounter inf entropy]...\n")
@@ -289,28 +260,13 @@ class Trainer(object):
                 # step
                 self.optim.step()
                 
-                # checkpoints
-                # if self.global_step % self.checkpoints_gap == 0 and self.global_step > 0:
-                #     save(global_step=self.global_step,
-                #          graph=self.graph["new"],
-                #          graph_prior=self.graph_prior,
-                #          optim=self.optim,
-                #          pkg_dir=self.checkpoints_dir,
-                #          is_best=True,
-                #          max_checkpoints=self.max_checkpoints)
-
                 # global step
                 self.global_step += 1
                 # accumulate the posterior of model
                 with torch.no_grad():
                     self.model_prior += torch.exp(-nlog_gamma.data).mean(dim=1)
 
-                    # self.model_prior +=(torch.exp(-nlog_gamma.data) * (1 - self.regulate_mulI * nlog_gamma)).mean(dim=1)
                 progress.set_description("{} at epoch {} on {}:".format(os.path.basename(self.hparams.Dir.log_root), epoch, self.data_device) + "loss: {0:.4f}".format(loss.cpu().data.numpy().round(4)))
-                # progress.set_description("loss: {0:.4f}".format(loss.cpu().data.numpy().round(4)))
-            # #update the prior of model
-            #if epoch>0 and epoch%self.prior_gap == 0:
-            
 
             if epoch>0 and epoch%self.em_gap == 0:
                 with torch.no_grad():
@@ -329,10 +285,9 @@ class Trainer(object):
                     self.current_nll = my_new_solution_nll
                     is_best = True
                     print("[{}, {}, NLL computer: Best update.]".format(os.path.basename(self.hparams.Dir.log_root), epoch))
-                    #print("[NLL computer: Best update.]")
+
                 else:
                     is_best = False
-                    # print("[NLL computer: No Best update.]")
                     print("[{}, {}, NLL computer: No Best update.]".format(os.path.basename(self.hparams.Dir.log_root), epoch))
                 
                 self.writer.add_scalar("nll_value/step", my_new_solution_nll, epoch)
