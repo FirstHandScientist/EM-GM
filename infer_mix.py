@@ -74,9 +74,7 @@ if __name__ == "__main__":
     if not os.path.exists(IMG_DIR):
         os.makedirs(IMG_DIR)
     hparams = JsonConfig(hparams)
-    ### the dir to load model
-    hparams.Infer.pre_trained = "cluster/archive/mnist/GenMM-K5/log/trained.pkg"
-    hparams.Infer.pre_trained = "cluster/archive/mnist/LatMM-K5/log/trained.pkg"
+    
     
     batch_size = hparams.Train.batch_size
     builded = build(hparams, False)
