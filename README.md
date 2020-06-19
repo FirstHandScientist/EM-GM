@@ -1,4 +1,4 @@
-Code is for reproducing experiment results (model comparison part)
+Code for reproducing experiment results of [our paper](https://arxiv.org/abs/1907.13432)
 ================================
 ## Requirements:
 1. Python 3.6.5
