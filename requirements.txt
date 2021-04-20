@@ -25,7 +25,7 @@ Pillow==5.4.1
 pluggy==0.6.0
 protobuf==3.7.1
 psutil==5.6.1
-py==1.7.0
+py==1.10.0
 pycodestyle==2.4.0
 pycparser==2.19
 pygelf==0.3.4
