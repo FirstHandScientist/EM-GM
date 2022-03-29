@@ -10,7 +10,7 @@ docopt==0.6.2
 execnet==1.5.0
 gnureadline==6.3.8
 grpcio==1.19.0
-horovod==0.16.1
+horovod==0.24.0
 joblib==0.13.2
 kiwisolver==1.0.1
 Markdown==3.1
