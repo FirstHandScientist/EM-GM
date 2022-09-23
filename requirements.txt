@@ -23,7 +23,7 @@ pandas==0.24.2
 pep8==1.7.1
 Pillow==5.4.1
 pluggy==0.6.0
-protobuf==3.7.1
+protobuf==3.18.3
 psutil==5.6.1
 py==1.7.0
 pycodestyle==2.4.0
